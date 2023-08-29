@@ -15,8 +15,8 @@
   let showBattle = false
 
   onMount(() => {
-    name = Math.random().toString()
-    if (!name || !name.trim()) location.reload()
+    name = prompt("What's your name?")
+    if (!name || !name.trim()) name = "Anon " + Math.floor(Math.random() * 50)
 
     socket.emit(
       "join",
