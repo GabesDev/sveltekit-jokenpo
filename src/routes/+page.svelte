@@ -1,73 +1,38 @@
 <script lang="ts">
-  import User from "$lib/components/User.svelte"
   import { onMount } from "svelte"
-  import { users } from "$lib/usersMockup"
+  import { io } from "socket.io-client"
+
+  import User from "$lib/components/User.svelte"
   import Chat from "$lib/components/Chat.svelte"
+  import Battle from "$lib/components/Battle.svelte"
 
-  
-  let nusers = users
-  let currentUser: User = nusers.find((x) => x.localPlayer)
-  
-  // Mock
-  let generateRandom = () => Math.floor(Math.random() * 3)
-  setInterval(() => {
-    nusers.map((x) => {
-      if (x.localPlayer === false) {
-        if (generateRandom() > 1) {
-          moveChar(x.id, "up")
-        }
-        if (generateRandom() < 1) {
-          moveChar(x.id, "down")
-        }
-
-        if (generateRandom() > 1) {
-          moveChar(x.id, "right")
-        }
-        if (generateRandom() < 1) {
-          moveChar(x.id, "left")
-        }
-      }
-      return x
-    })
-  }, 1000)
+  const socket = io()
+  let users: User[] = []
 
   let name: string | null
-  const STEP = 4
+  let currentUser: User
+
+  let showBattle = false
 
   onMount(() => {
-    //while (!name || !name.trim()) name = prompt("What's your name?")
-    currentUser.name = name = 'Tests'
+    name = prompt("What's your name?")
+    if (!name || !name.trim()) location.reload()
+
+    socket.emit("join", name, ({ user, error }) => {
+      if (error) {
+        alert("Name taken. Please, choose another.")
+        location.reload()
+      }
+      if (user) {
+        currentUser = user
+        showBattle = true
+      }
+    })
   })
 
-  let moveChar = (id: number, direction: string) => {
-    let index = nusers.findIndex((x) => x.id == id)
-
-    if (direction === "up") {
-      if (nusers[index].posY >= STEP) {
-        nusers[index].posY -= STEP * 2
-      }
-    }
-    if (direction === "down") {
-      if (nusers[index].posY <= 100 - STEP * 4) {
-        nusers[index].posY += STEP * 2
-      }
-    }
-    if (direction === "left") {
-      if (nusers[index].posX >= STEP) {
-        nusers[index].posX -= STEP
-      }
-    }
-    if (direction === "right") {
-      if (nusers[index].posX <= 100 - STEP * 2) {
-        nusers[index].posX += STEP
-      }
-    }
-
-    nusers[index].facing = direction
-    nusers[index].state = "moving"
-
-    nusers = nusers
-  }
+  socket.on("renderAll", (usersData) => {
+    users = usersData.users
+  })
 
   let keydown = (e: KeyboardEvent) => {
     if (
@@ -80,19 +45,51 @@
       if (e.code === "Space") {
         currentUser.char = currentUser.char >= 12 ? 1 : ++currentUser.char
       } else {
-        moveChar(
-          currentUser.id,
+        currentUser = moveChar(
+          currentUser,
           e.code.replace("Arrow", "").toLocaleLowerCase()
         )
       }
+      socket.emit("updatePosition", currentUser)
     }
+  }
+
+  let moveChar = (user: User, direction: string) => {
+    const STEP = 4
+    if (direction === "up") {
+      if (user.posY >= STEP) {
+        user.posY -= STEP * 2
+      }
+    }
+    if (direction === "down") {
+      if (user.posY <= 100 - STEP * 4) {
+        user.posY += STEP * 2
+      }
+    }
+    if (direction === "left") {
+      if (user.posX >= STEP) {
+        user.posX -= STEP
+      }
+    }
+    if (direction === "right") {
+      if (user.posX <= 100 - STEP * 2) {
+        user.posX += STEP
+      }
+    }
+
+    user.facing = direction
+    return user
   }
 </script>
 
 <svelte:window on:keydown={keydown} />
-
-{#each nusers as user}
-  <User {...user} />
-{/each}
-
-<Chat />
+<main>
+  {#each users as user}
+    <User {user} {socket} />
+  {/each}
+</main>
+<Chat {socket} />
+{currentUser?.state}
+{#if showBattle}
+  <Battle {currentUser} {socket} />
+{/if}

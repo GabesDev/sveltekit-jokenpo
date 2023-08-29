@@ -1,24 +1,31 @@
-<script lang="ts">
-  type State = "moving" | "busy" | "stopped"
-  type Facing = "left" | "right" | "up" | "down" 
+<script>
+  export let user
+  export let socket
 
-  export let char: number = 1
-  export let posX: number = 0
-  export let posY: number = 0
-  export let name: string = "BOT"
-  export let id: number = 0
-  export let state: State = "moving"
-  export let facing: Facing = "down"
-  export let localPlayer: boolean = false
+  let localPlayer = socket.id == user.id
+
+  let startBattle = (user) => {
+    socket.emit("askBattle", user)
+  }
 </script>
 
 <div
   class="user-container"
-  style="left: {posX}vw; top: {posY}vh"
-  on:transitionend={() => (state = "stopped")}
+  style="left: {user.posX}vw; top: {user.posY}vh; {localPlayer
+    ? 'z-index: 2'
+    : ''}"
+  on:transitionend={() => (user.state = "stopped")}
+  on:transitionstart={() => (user.state = "moving")}
 >
-  <p class:me={localPlayer}>{name} ({id})</p>
-  <div class="user user-{char} {facing} {state}" />
+  <p class:me={localPlayer}>{user.name}</p>
+  <button
+    class="user user-{user.char} {user.facing} {user.state}"
+    disabled={user.state === "busy"}
+    on:click={() => {
+      if (user.state === "busy" || localPlayer) return
+      startBattle(user)
+    }}
+  />
 </div>
 
 <style lang="scss">
@@ -29,6 +36,7 @@
     text-align: center;
     max-width: 100px;
     .user {
+      border: none;
       background: url(/images/sprites.png);
       width: 32px;
       height: 42px;

@@ -1,10 +1,11 @@
 <script lang="ts">
   import { afterUpdate, onMount } from "svelte"
+  export let socket
 
   type ChatState = "recording" | "normal"
   let state: ChatState = "normal"
 
-  let messages: Object[] = []
+  let messages: { user: string; text: string }[] = []
   let messagesContainer: HTMLElement
 
   let SpeechRecognition: any
@@ -36,8 +37,7 @@
       let command = e.results[last][0].transcript
 
       let text = command.toLowerCase()
-      console.log(typeof e, typeof state)
-      if (!isCommand(text)) messages = [...messages, { user: "me", text }]
+      if (!isCommand(text)) socket.emit("newMessage", { text })
     }
 
     recognition.onerror = (e: SpeechRecognitionErrorEvent) =>
@@ -74,6 +74,10 @@
       state = "recording"
     }
   }
+
+  socket.on("renderMessages", (allMessages) => {
+    messages = [...allMessages.messages]
+  })
 </script>
 
 <div class="container">
@@ -84,8 +88,8 @@
   <div class="messages" bind:this={messagesContainer}>
     {#each messages as message}
       <p>
-        <span class="user me">
-          {message.user}
+        <span class="user {message.uid === socket.id ? 'me' : ''}">
+          {message.user}:
         </span>
         {message.text}
       </p>
@@ -104,6 +108,7 @@
     background: rgba(0, 0, 0, 0.5);
     border-top: 2px solid white;
     color: white;
+    z-index: 3;
   }
 
   .messages {
