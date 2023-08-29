@@ -1,11 +1,10 @@
 <script lang="ts">
   import { afterUpdate, onMount } from "svelte"
-  export let socket
+  export let socket: any
 
-  type ChatState = "recording" | "normal"
   let state: ChatState = "normal"
 
-  let messages: { user: string; text: string }[] = []
+  let messages: Messages[] = []
   let messagesContainer: HTMLElement
 
   let SpeechRecognition: any
@@ -75,7 +74,7 @@
     }
   }
 
-  socket.on("renderMessages", (allMessages) => {
+  socket.on("renderMessages", (allMessages: { messages: Messages[] }) => {
     messages = [...allMessages.messages]
   })
 </script>

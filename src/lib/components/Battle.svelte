@@ -1,206 +1,107 @@
-<script>
-  import { slide, fly } from "svelte/transition"
+<script lang="ts">
+  import { fly, slide } from "svelte/transition"
 
-  export let currentUser
-  export let socket
+  export let currentUser: User
+  export let socket: any
 
-  let enemy
-  let askModal = false
-  let openModal = false
-  let challenged = false
-  let waiting = false
-  let animated = "animated"
-  let compareValues = []
-  let battleResult = ""
-  let myOption = ""
-  let enemyOption = ""
+  let state: BattleState = "neutral"
+  let result: Result
 
-  let options = [
-    {
-      name: "rock",
-      selected: false,
-    },
-    {
-      name: "paper",
-      selected: false,
-    },
-    {
-      name: "scissors",
-      selected: false,
-    },
-  ]
+  let enemy: User | null
+  let isAnimating: boolean = true
 
-  let resetStatus = () => {
-    enemy = {}
-    askModal = false
-    openModal = false
-    challenged = false
-    waiting = false
-    animated = "animated"
-    battleResult = ""
-    myOption = ""
-    enemyOption = ""
-    options = [
-      {
-        name: "rock",
-        selected: false,
-      },
-      {
-        name: "paper",
-        selected: false,
-      },
-      {
-        name: "scissors",
-        selected: false,
-      },
-    ]
+  let enemyChoice: Choices = ""
+  let myChoice: Choices = ""
 
-    compareValues = []
+  let clearStatus = () => {
+    state = "neutral"
+    isAnimating = true
+    enemyChoice = ""
+    myChoice = ""
+    enemy = null
   }
 
-  socket.on("challenged", (challenger) => {
-    enemy = challenger
-    askModal = true
-    challenged = true
-  })
-
-  socket.on("waiting", () => {
-    askModal = true
-    waiting = true
-  })
-
-  socket.on("openModal", (newEnemy) => {
-    resetStatus()
-    enemy = { ...newEnemy }
-    openModal = true
-  })
-
-  socket.on("battleDenied", (enemy) => {
-    resetStatus()
-  })
-
-  let answerBattle = (answer) => {
-    socket.emit("answerBattle", { enemy, answer })
-  }
-
-  let selected = (option) => {
-    const hasSelected = options.findIndex((o) => o.selected === true)
-    if (hasSelected !== -1) return
-    animated = ""
-    option.selected = true
-
-    const optionIndex = options.findIndex((o) => o.name === option.name)
-    options[optionIndex] = option
-    options = [...options]
-    compareValues[0] = option
-    socket.emit("choiceMade", { option, enemy })
-  }
-
-  socket.on("option", ({ sender, option }) => {
-    compareValues[1] = option
-  })
-
-  $: {
-    if (compareValues[0] && compareValues[1]) {
-      if (compareValues[0].name === "rock") {
-        if (compareValues[1].name === "rock")
-          finishBattle({
-            result: "tie",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-        if (compareValues[1].name === "paper")
-          finishBattle({
-            result: "lost",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-        if (compareValues[1].name === "scissors")
-          finishBattle({
-            result: "won",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-      } else if (compareValues[0].name === "paper") {
-        if (compareValues[1].name === "rock")
-          finishBattle({
-            result: "won",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-        if (compareValues[1].name === "paper")
-          finishBattle({
-            result: "tie",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-        if (compareValues[1].name === "scissors")
-          finishBattle({
-            result: "lost",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-      } else if (compareValues[0].name === "scissors") {
-        if (compareValues[1].name === "rock")
-          finishBattle({
-            result: "lost",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-        if (compareValues[1].name === "paper")
-          finishBattle({
-            result: "won",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-        if (compareValues[1].name === "scissors")
-          finishBattle({
-            result: "tie",
-            optionName: compareValues[0],
-            enemyOptionName: compareValues[1],
-          })
-      }
-      compareValues = []
-    }
-  }
-
-  let finishBattle = ({ result, optionName, enemyOptionName }) => {
-    myOption = optionName.name
-    enemyOption = enemyOptionName.name
-    battleResult = result
+  let endGame = (final: Result) => {
+    result = final
 
     setTimeout(() => {
-      askModal = true
+      state = "ended"
       setTimeout(() => {
         socket.emit("battleEnded", enemy)
-        resetStatus()
+        clearStatus()
       }, 3000)
     }, 3000)
   }
 
-  let keydown = (e) => {
-    if (e.code === "Escape") {
-      socket.emit("battleEnded", enemy)
-      resetStatus()
+  $: {
+    if (myChoice && enemyChoice) {
+      if (myChoice === enemyChoice) {
+        endGame("tie")
+      } else if (
+        (myChoice === "rock" && enemyChoice === "paper") ||
+        (myChoice === "paper" && enemyChoice === "scissors") ||
+        (myChoice === "scissors" && enemyChoice === "rock")
+      ) {
+        endGame("lost")
+      } else {
+        endGame("won")
+      }
     }
+  }
+
+  socket.on("challenged", (challenger: User) => {
+    enemy = challenger
+    state = "answering"
+  })
+
+  socket.on("waiting", () => {
+    state = "asking"
+  })
+
+  let answerBattle = (answer: boolean) => {
+    socket.emit("answerBattle", { enemy, answer })
+  }
+
+  socket.on("openModal", (newEnemy: User) => {
+    clearStatus()
+    enemy = { ...newEnemy }
+    state = "playing"
+  })
+
+  socket.on("battleDenied", () => {
+    clearStatus()
+  })
+
+  socket.on(
+    "option",
+    ({ sender, choice }: { sender: User; choice: Choices }) => {
+      enemyChoice = choice
+    }
+  )
+
+  let makeChoice = (choice: Choices) => {
+    myChoice = choice
+    isAnimating = false
+
+    socket.emit("choiceMade", { choice, enemy })
   }
 </script>
 
-{#if askModal}
+{#if state == "asking"}
   <div transition:slide class="ask-modal">
-    {#if challenged}
-      <h1>{enemy.name} challenged you!</h1>
-      <button class="accept" on:click={() => answerBattle(true)}>Accept</button>
-      <button class="deny" on:click={() => answerBattle(false)}>Deny</button>
-    {:else if waiting}
-      <h1>...</h1>
-    {:else if battleResult}
-      <h1>{battleResult === "tie" ? "Tied!" : `You ${battleResult}!`}</h1>
-    {/if}
+    <h1>...</h1>
   </div>
 {/if}
 
-{#if openModal && enemy}
+{#if state == "answering"}
+  <div transition:slide class="ask-modal">
+    <h1>{enemy?.name} challenged you!</h1>
+    <button class="accept" on:click={() => answerBattle(true)}>Accept</button>
+    <button class="deny" on:click={() => answerBattle(false)}>Deny</button>
+  </div>
+{/if}
+
+{#if state == "playing"}
   <div class="container">
     <div in:fly={{ x: 1000, y: 0, duration: 1500 }} class="background">
       <img
@@ -211,30 +112,44 @@
     </div>
     <div
       in:fly={{ x: -500, duration: 1000, delay: 1000 }}
-      class="full-user user-{currentUser.char} left"
+      class="full-user user-{currentUser?.char} left"
     />
     <div class="options" in:slide={{ delay: 2000 }}>
-      {#each options as option}
-        <div
-          class="option {option.selected ? '' : 'transparent'}
-          {animated}
-          {option.name}"
-          on:click={() => selected(option)}
-        />
-      {/each}
+      <button
+        class="option rock {myChoice == 'rock' ? '' : 'transparent'}"
+        class:animated={isAnimating}
+        disabled={!isAnimating}
+        on:click={() => makeChoice("rock")}
+      />
+      <button
+        class="option paper {myChoice == 'paper' ? '' : 'transparent'}"
+        class:animated={isAnimating}
+        disabled={!isAnimating}
+        on:click={() => makeChoice("paper")}
+      />
+      <button
+        class="option scissors {myChoice == 'scissors' ? '' : 'transparent'}"
+        class:animated={isAnimating}
+        disabled={!isAnimating}
+        on:click={() => makeChoice("scissors")}
+      />
     </div>
     <div
       in:fly={{ x: 500, duration: 1000, delay: 1000 }}
-      class="full-user user-{enemy.char} right"
+      class="full-user user-{enemy?.char} right"
     />
-    <div class="result {battleResult}">
-      <option class="option me {myOption}" />
-      <option class="option enemy {enemyOption}" />
+    <div class="result {result}">
+      <option class="option me {myChoice}" />
+      <option class="option enemy {enemyChoice}" />
     </div>
   </div>
 {/if}
 
-<svelte:window on:keydown={keydown} />
+{#if state == "ended"}
+  <div transition:slide class="ask-modal">
+    <h1>{result === "tie" ? "Tied!" : `You ${result}!`}</h1>
+  </div>
+{/if}
 
 <style lang="scss">
   .container {
@@ -359,6 +274,7 @@
     height: 160px;
     transform: rotate(90deg);
     cursor: pointer;
+    border: none;
 
     &.paper {
       background-position: -126px -460px;

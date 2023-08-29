@@ -1,27 +1,5 @@
-type User = {
-  id: string
-  name: string
-  char: number
-  posX: number
-  posY: number
-  facing: Facing
-  state: State
-}
 
-type Facing = "left" | "right" | "up" | "down"
-type State = "busy" | "stopped"
-
-export const users: User[] = [
-  {
-    char: 1,
-    posX: 0,
-    posY: 0,
-    name: "BOT",
-    id: '0',
-    state: "stopped",
-    facing: "down",
-  }
-]
+export const users: User[] = []
 
 export const addUser = ({ id, name }: { id: string, name: string }) => {
   if (!name) return { error: 'No name' }

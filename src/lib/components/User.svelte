@@ -1,10 +1,10 @@
-<script>
-  export let user
-  export let socket
+<script lang="ts">
+  export let user: User
+  export let socket: any
 
   let localPlayer = socket.id == user.id
 
-  let startBattle = (user) => {
+  let startBattle = (user: User) => {
     socket.emit("askBattle", user)
   }
 </script>
@@ -17,7 +17,9 @@
   on:transitionend={() => (user.state = "stopped")}
   on:transitionstart={() => (user.state = "moving")}
 >
-  <p class:me={localPlayer}>{user.name}</p>
+  <p class:me={localPlayer}>
+    {user.name}
+  </p>
   <button
     class="user user-{user.char} {user.facing} {user.state}"
     disabled={user.state === "busy"}

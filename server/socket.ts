@@ -59,9 +59,9 @@ export default {
 				}
 			})
 
-			socket.on('choiceMade', ({ option, enemy }) => {
+			socket.on('choiceMade', ({ choice, enemy }) => {
 				let sender = getUser(socket.id)
-				io.to(enemy.id).emit('option', { sender, option })
+				io.to(enemy.id).emit('option', { sender, choice })
 			})
 
 			socket.on('battleEnded', (enemy) => {
@@ -75,7 +75,6 @@ export default {
 				removeUser(socket.id)
 				renderAll()
 			})
-
 
 			let renderAll = () => {
 				const users = getUsers()
