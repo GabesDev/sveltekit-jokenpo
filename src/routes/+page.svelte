@@ -2,6 +2,7 @@
   import { onMount } from "svelte"
   import { io } from "socket.io-client"
 
+  import Button from "$lib/components/Button.svelte"
   import User from "$lib/components/User.svelte"
   import Chat from "$lib/components/Chat.svelte"
   import Battle from "$lib/components/Battle.svelte"
@@ -73,6 +74,8 @@
 </script>
 
 <svelte:window on:keydown={keydown} />
+
+<Button />
 
 {#if showBattle}
   <Battle {currentUser} {socket} />
