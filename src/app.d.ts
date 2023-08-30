@@ -11,7 +11,7 @@ declare global {
 		state: State
 	}
 	type BattleState = "neutral" | "asking" | "answering" | "playing" | "ended"
-	type Result = "won" | "lost" | "tie"
+	type Result = "won" | "lost" | "tie" | ""
 	type Choices = "rock" | "paper" | "scissors" | ""
 	type ChatState = "recording" | "normal"
 	type Facing = "left" | "right" | "up" | "down"

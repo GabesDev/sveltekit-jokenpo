@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte"
+  import { swipe } from "svelte-gestures"
+
   import { io } from "socket.io-client"
 
   import Button from "$lib/components/Button.svelte"
@@ -14,6 +16,7 @@
   let currentUser: User
 
   let showBattle = false
+  let innerWidth: number | null
 
   onMount(() => {
     name = prompt("What's your name?")
@@ -39,8 +42,18 @@
     users = usersData.users
   })
 
-  let keydown = (e: KeyboardEvent) => {
+  let keydown = (e: KeyboardEvent | any) => {
     if (currentUser.state == "busy") return
+
+    let direction = e.detail?.direction
+    if (direction) {
+      if (direction == "top") direction = "ArrowUp"
+      if (direction == "bottom") direction = "ArrowDown"
+      if (direction == "left") direction = "ArrowLeft"
+      if (direction == "right") direction = "ArrowRight"
+      if (!e.code) e.code = direction
+    }
+
     if (
       e.code === "ArrowUp" ||
       e.code === "ArrowDown" ||
@@ -48,7 +61,7 @@
       e.code === "ArrowRight" ||
       e.code === "Space"
     ) {
-      const STEP = 4
+      let STEP = 4
 
       if (e.code === "Space") {
         currentUser.char = currentUser.char >= 12 ? 1 : ++currentUser.char
@@ -60,6 +73,7 @@
         if (direction === "down" && currentUser.posY <= 100 - STEP * 4) {
           currentUser.posY += STEP * 2
         }
+        if(innerWidth < 1000) STEP *= 4
         if (direction === "left" && currentUser.posX >= STEP) {
           currentUser.posX -= STEP
         }
@@ -73,18 +87,35 @@
   }
 </script>
 
-<svelte:window on:keydown={keydown} />
+<svelte:window on:keydown={keydown} bind:innerWidth />
 
-<Button />
+<div
+  class="container"
+  use:swipe={{ timeframe: 300, minSwipeDistance: 100 }}
+  on:swipe={keydown}
+>
+  <Button />
 
-{#if showBattle}
-  <Battle {currentUser} {socket} />
-{/if}
+  {#if showBattle}
+    <Battle {currentUser} {socket} />
+  {/if}
 
-<main>
-  {#each users as user (user.id)}
-    <User {user} {socket} />
-  {/each}
-</main>
+  <main>
+    {#each users as user (user.id)}
+      <User {user} {socket} />
+    {/each}
+  </main>
+  {#if innerWidth > 1000}
+    <!-- content here -->
+    <Chat {socket} />
+  {/if}
+</div>
 
-<Chat {socket} />
+<style>
+  .container {
+    z-index: 99;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+  }
+</style>

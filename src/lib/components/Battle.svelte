@@ -19,6 +19,7 @@
     enemyChoice = ""
     myChoice = ""
     enemy = null
+    result = ""
   }
 
   let endGame = (final: Result) => {
@@ -171,6 +172,10 @@
     z-index: 5;
     width: 100%;
 
+    @media screen and (max-width: 750px) {
+      height: 200px;
+    }
+
     img {
       width: 100%;
       object-fit: cover;
@@ -184,13 +189,24 @@
     background: url(/images/sprites.png);
     position: absolute;
     z-index: 5;
-    transform: scale(4);
     transition: all 1s;
+
+    transform: scale(4);
     &.left {
       left: 20%;
     }
     &.right {
       right: 20%;
+    }
+
+    @media screen and (max-width: 750px) {
+      transform: scale(1.2);
+      &.left {
+        left: 0;
+      }
+      &.right {
+        right: 0;
+      }
     }
 
     &.user-1 {
@@ -240,6 +256,7 @@
     right: 0;
     top: calc(50% - 150px);
     width: 50%;
+    min-width: 450px;
     height: 300px;
     background: white;
     margin: 0 auto;
@@ -267,6 +284,10 @@
     align-items: center;
     flex-flow: column;
     border-radius: 100px;
+
+    @media screen and (max-width: 750px) {
+      transform: scale(0.8);
+    }
   }
   .option {
     background: url(/images/jkp.png);
@@ -289,6 +310,7 @@
   .transparent {
     opacity: 0.5;
   }
+
   .animated {
     animation: 1.5s wiggle infinite;
     opacity: 1;
@@ -299,6 +321,7 @@
     width: 100%;
     display: flex;
     align-items: center;
+
     .option {
       position: absolute;
       z-index: 5;
@@ -352,6 +375,23 @@
         &.enemy {
           transform: scale(3) rotate(270deg);
           right: calc(50% - 300px);
+        }
+      }
+    }
+
+    @media screen and (max-width: 750px) {
+      &.won,
+      &.tie,
+      &.lost {
+        .option {
+          &.me {
+            transform: scale(1) rotate(90deg);
+            left: calc(50% - 100px);
+          }
+          &.enemy {
+            transform: scale(1) rotate(270deg);
+            right: calc(50% - 100px);
+          }
         }
       }
     }
