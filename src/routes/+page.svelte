@@ -9,7 +9,7 @@
   import Chat from "$lib/components/Chat.svelte"
   import Battle from "$lib/components/Battle.svelte"
 
-  let socket = io('MUSTUPDATEURL');
+  let socket = io('https://jokenpo-server.fly.dev/');
   let users: User[] = []
 
   let name: string | null

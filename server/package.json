@@ -2,10 +2,13 @@
   "name": "sveltekit-jokenpo-server",
   "version": "0.0.1",
   "scripts": {
-    "start": "node build"
+    "start": "node socket"
   },
   "dependencies": {
     "express": "^4.18.2",
     "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "@flydotio/dockerfile": "^0.4.8"
   }
 }
