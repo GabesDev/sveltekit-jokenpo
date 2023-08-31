@@ -1,6 +1,6 @@
 # Svelte Jokenpo 🤜 💥 🫲
 
-![image](https://github.com/GabesDev/sveltekit-jokenpo/assets/33043706/80791ce3-9179-4a9e-8cda-59158a3d6a42)
+![Screenshot](static/images/screenshot.png)
 
 [![Button Icon]][Link] 
 
