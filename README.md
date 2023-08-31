@@ -1,38 +1,54 @@
-# create-svelte
+# Svelte Jokenpo 🤜 💥 🫲
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+![image](https://github.com/GabesDev/sveltekit-jokenpo/assets/33043706/80791ce3-9179-4a9e-8cda-59158a3d6a42)
 
-## Creating a project
+[![Button Icon]][Link] 
 
-If you're seeing this, you've probably already done this step. Congrats!
+Rock, Paper, and Scissors online multiplayer minigame project to put into practice some SvelteKit and socket.io knowledge 😁
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+>⬆️➡️⬇️⬅️ - Move
+>
+><kbd> <br> SPACE <br> </kbd> - Change char
+>
+>🖱️ - Challenge players
+>
+>🎙️ - Record messages
+>
+><kbd> <br> ESC <br> </kbd> - Close modals
 
-# create a new project in my-app
-npm create svelte@latest my-app
+
+You can open two tabs to see it in action if nobody is there.
+Use **arrow keys** to walk, press **space** to change char and **esc** to close modals.
+
+The chat/recording system uses [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API/Using_the_Web_Speech_API). 
+
+Works better on Chrome (to see the API in action using Firefox, you have to change some flags under about:config) 😑
+
+It is possible to give some commands using that API, but I did not go too deep in that. You can test it by saying "alerta".
+
+> 
+[/blob/master/src/lib/components/Chat.svelte #46](../main/src/lib/components/Chat.svelte#L46)
+```javascript
+  let isCommand = (text: string) => {
+    if (text === "alerta") {
+      alert("Exemplo de comando")
+      return true
+    }
+    return false
+  }
 ```
 
-## Developing
+Deploy:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+[![FE Icon]][FE Link] 
 
-```bash
-npm run dev
+[![BE Icon]][BE Link] 
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+[Button Icon]: https://img.shields.io/badge/ACESSAR-jokenpo.gabes.dev-blue
+[Link]: https://jokenpo.gabes.dev/ 'Jokenpo (Rock, Paper, Scissors)'
 
-## Building
+[FE Icon]: https://img.shields.io/badge/Front_end-NETLIFY-red
+[FE Link]: https://www.netlify.com 'Netlify'
 
-To create a production version of your app:
-
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+[BE Icon]: https://img.shields.io/badge/Back_end-FLY.IO-green
+[BE Link]: https://fly.io/ 'Fly.io'
