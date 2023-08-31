@@ -2,14 +2,14 @@
   import { onMount } from "svelte"
   import { swipe } from "svelte-gestures"
 
-  import { io } from "socket.io-client"
+  import io from "socket.io-client"
 
   import Button from "$lib/components/Button.svelte"
   import User from "$lib/components/User.svelte"
   import Chat from "$lib/components/Chat.svelte"
   import Battle from "$lib/components/Battle.svelte"
 
-  const socket = io()
+  let socket = io('MUSTUPDATEURL');
   let users: User[] = []
 
   let name: string | null
@@ -73,7 +73,7 @@
         if (direction === "down" && currentUser.posY <= 100 - STEP * 4) {
           currentUser.posY += STEP * 2
         }
-        if(innerWidth < 1000) STEP *= 4
+        if (innerWidth < 1000) STEP *= 4
         if (direction === "left" && currentUser.posX >= STEP) {
           currentUser.posX -= STEP
         }

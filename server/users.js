@@ -1,13 +1,12 @@
+let users = []
 
-export const users: User[] = []
-
-export const addUser = ({ id, name }: { id: string, name: string }) => {
-  if (!name) return { error: 'No name' }
+const addUser = ({ id, name }) => {
+  if (!name) return { error: "No name" }
 
   name = name.trim().toLowerCase()
   const existingUser = users.find(user => user.name === name)
 
-  if (existingUser) return { error: 'Username is taken' }
+  if (existingUser) return { error: "Username is taken" }
 
   const user = {
     id,
@@ -15,40 +14,50 @@ export const addUser = ({ id, name }: { id: string, name: string }) => {
     char: Math.floor(Math.random() * 10 + 1),
     posX: 0,
     posY: 0,
-    state: "stopped" as State,
-    facing: "down" as Facing,
+    state: "stopped",
+    facing: "down"
   }
 
   users.push(user)
   return { user }
 }
 
-export const updateUser = (updatedUser: User) => {
+const updateUser = updatedUser => {
   const userIndex = users.findIndex(user => user.id === updatedUser.id)
-  if (userIndex === -1) return { error: 'User not found' }
+  if (userIndex === -1) return { error: "User not found" }
   users[userIndex] = updatedUser
   return { users }
 }
 
-export const removeUser = (id: string) => {
-  const index = users.findIndex((user) => user.id === id)
+const removeUser = id => {
+  const index = users.findIndex(user => user.id === id)
   if (index !== -1) return users.splice(index, 1)[0]
 }
 
-export const getUser = (id: string) => users.find(user => user.id === id)
+const getUser = id => users.find(user => user.id === id)
 
-export const getUsers = () => users
+const getUsers = () => users
 
-export const makeBusy = (busyUser: User) => {
+const makeBusy = busyUser => {
   const userIndex = users.findIndex(user => user.id === busyUser.id)
   if (userIndex === -1) return
   busyUser.state = "busy"
   users[userIndex] = busyUser
 }
 
-export const makeFree = (freeUser: User) => {
+const makeFree = freeUser => {
   const userIndex = users.findIndex(user => user.id === freeUser.id)
   if (userIndex === -1) return
   freeUser.state = "stopped"
   users[userIndex] = freeUser
+}
+
+module.exports = {
+  addUser,
+  updateUser,
+  removeUser,
+  getUser,
+  getUsers,
+  makeBusy,
+  makeFree
 }
